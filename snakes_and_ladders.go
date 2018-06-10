@@ -24,27 +24,28 @@ func readCoordinate(reader *bufio.Reader) (int, int) {
 }
 
 func getNumberOfMovesToCompleteGame(positions []int, shoots map[int]int, numberOfTurns int) int {
-	fmt.Println(positions)
 	var nextPositions []int
 	for _, position := range positions {
-		for i := 0; i < 6; i++ {
-			var space = position - i
+		for i := 1; i <= 6; i++ {
+			var space = position + i
 			if space == 1 {
 				return numberOfTurns
 			}
 			end, ok := shoots[space]
+			if space == 100 || end == 100 && end < 101 {
+				return numberOfTurns
+			}
 			if ok == true {
 				nextPositions = append(nextPositions, end)
 			}
 		}
-		var moveDiceRoll = position - 6
-		if moveDiceRoll <= 1 {
-			return numberOfTurns
+		_, ok := shoots[position+6]
+		if ok == false {
+			nextPositions = append(nextPositions, position+6)
 		}
-		nextPositions = append(nextPositions, position-6)
 	}
-	if numberOfTurns > 4 {
-		return numberOfTurns
+	if numberOfTurns > 20 {
+		return -1
 	}
 	return getNumberOfMovesToCompleteGame(nextPositions, shoots, numberOfTurns+1)
 }
@@ -54,12 +55,12 @@ func getLaddersAndSnakes(reader *bufio.Reader) map[int]int {
 	var numberOfLadders = readNumber(reader)
 	for ladderCnt := 0; ladderCnt < numberOfLadders; ladderCnt++ {
 		var start, end = readCoordinate(reader)
-		shoots[end] = start
+		shoots[start] = end
 	}
 	var numberOfSnakes = readNumber(reader)
 	for snakeCnt := 0; snakeCnt < numberOfSnakes; snakeCnt++ {
 		var start, end = readCoordinate(reader)
-		shoots[end] = start
+		shoots[start] = end
 	}
 	return shoots
 }
@@ -69,8 +70,7 @@ func main() {
 	var numberOfProblems = readNumber(reader)
 	for i := 0; i < numberOfProblems; i++ {
 		var shoots map[int]int = getLaddersAndSnakes(reader)
-		fmt.Println(shoots)
-		var minNumberOfTurns = getNumberOfMovesToCompleteGame([]int{100}, shoots, 1)
+		var minNumberOfTurns = getNumberOfMovesToCompleteGame([]int{1}, shoots, 1)
 		fmt.Println(minNumberOfTurns)
 	}
 }
